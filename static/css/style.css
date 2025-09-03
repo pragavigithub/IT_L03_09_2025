@@ -434,3 +434,25 @@ body {
     .status-qc_approved { background-color: #28a745; color: white; }
     .status-posted { background-color: #6c757d; color: white; }
     .status-pending_qc { background-color: #fd7e14; color: white; }
+
+@media (max-width: 576px) {
+    .dashboard-card {
+        padding: 15px;
+    }
+    .chart-container {
+        height: 200px;
+    }
+    .activity-item {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
