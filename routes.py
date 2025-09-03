@@ -418,64 +418,78 @@ def get_pending_approvals():
 @login_required
 def dashboard():
     try:
-        # Get dashboard statistics
-        grpo_count = GRPODocument.query.filter_by(user_id=current_user.id).count()
-        transfer_count = InventoryTransfer.query.filter_by(user_id=current_user.id).count()
-        pick_list_count = PickList.query.filter_by(user_id=current_user.id).count()
-        count_tasks = InventoryCount.query.filter_by(user_id=current_user.id).count()
+        # Import required modules
+        from models import SerialNumberTransfer, SerialItemTransfer
+        from modules.invoice_creation.models import InvoiceDocument
+        from sqlalchemy import func, extract
+        from datetime import datetime, timedelta
+        
+        # Get dashboard statistics for the three modules only
+        serial_transfer_count = SerialNumberTransfer.query.filter_by(user_id=current_user.id).count()
+        serial_item_transfer_count = SerialItemTransfer.query.filter_by(user_id=current_user.id).count()
+        invoice_count = InvoiceDocument.query.filter_by(user_id=current_user.id).count()
+        
+        # Monthly analytics data for the last 12 months
+        twelve_months_ago = datetime.utcnow() - timedelta(days=365)
+        
+        # Serial Number Transfer monthly data
+        serial_transfer_monthly = db.session.query(
+            extract('month', SerialNumberTransfer.created_at).label('month'),
+            func.count(SerialNumberTransfer.id).label('count')
+        ).filter(
+            SerialNumberTransfer.user_id == current_user.id,
+            SerialNumberTransfer.created_at >= twelve_months_ago
+        ).group_by(extract('month', SerialNumberTransfer.created_at)).all()
+        
+        # Serial Item Transfer monthly data
+        serial_item_transfer_monthly = db.session.query(
+            extract('month', SerialItemTransfer.created_at).label('month'),
+            func.count(SerialItemTransfer.id).label('count')
+        ).filter(
+            SerialItemTransfer.user_id == current_user.id,
+            SerialItemTransfer.created_at >= twelve_months_ago
+        ).group_by(extract('month', SerialItemTransfer.created_at)).all()
+        
+        # Invoice Creation monthly data
+        invoice_monthly = db.session.query(
+            extract('month', InvoiceDocument.created_at).label('month'),
+            func.count(InvoiceDocument.id).label('count')
+        ).filter(
+            InvoiceDocument.user_id == current_user.id,
+            InvoiceDocument.created_at >= twelve_months_ago
+        ).group_by(extract('month', InvoiceDocument.created_at)).all()
+        
+        # Convert to monthly arrays (12 months)
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        
+        serial_transfer_data = [0] * 12
+        serial_item_transfer_data = [0] * 12
+        invoice_data = [0] * 12
+        
+        for month, count in serial_transfer_monthly:
+            serial_transfer_data[int(month) - 1] = count
+            
+        for month, count in serial_item_transfer_monthly:
+            serial_item_transfer_data[int(month) - 1] = count
+            
+        for month, count in invoice_monthly:
+            invoice_data[int(month) - 1] = count
         
         stats = {
-            'grpo_count': grpo_count,
-            'transfer_count': transfer_count,
-            'pick_list_count': pick_list_count,
-            'count_tasks': count_tasks
+            'serial_transfer_count': serial_transfer_count,
+            'serial_item_transfer_count': serial_item_transfer_count,
+            'invoice_count': invoice_count,
+            'months': months,
+            'serial_transfer_data': serial_transfer_data,
+            'serial_item_transfer_data': serial_item_transfer_data,
+            'invoice_data': invoice_data
         }
         
-        # Get recent activity - live data from database
+        # Get recent activity - focused on the three modules only
         recent_activities = []
         
-        # Get recent GRPO documents
-        recent_grpos = GRPODocument.query.filter_by(user_id=current_user.id).order_by(GRPODocument.created_at.desc()).limit(5).all()
-        for grpo in recent_grpos:
-            recent_activities.append({
-                'type': 'GRPO Created',
-                'description': f"PO: {grpo.po_number}",
-                'created_at': grpo.created_at,
-                'status': grpo.status
-            })
-        
-        # Get recent inventory transfers
-        recent_transfers = InventoryTransfer.query.filter_by(user_id=current_user.id).order_by(InventoryTransfer.created_at.desc()).limit(5).all()
-        for transfer in recent_transfers:
-            recent_activities.append({
-                'type': 'Inventory Transfer',
-                'description': f"Request: {transfer.transfer_request_number}",
-                'created_at': transfer.created_at,
-                'status': transfer.status
-            })
-        
-        # Get recent pick lists
-        recent_picklists = PickList.query.filter_by(user_id=current_user.id).order_by(PickList.created_at.desc()).limit(5).all()
-        for picklist in recent_picklists:
-            recent_activities.append({
-                'type': 'Pick List',
-                'description': f"List: {picklist.pick_list_number}",
-                'created_at': picklist.created_at,
-                'status': picklist.status
-            })
-        
-        # Get recent inventory counts
-        recent_counts = InventoryCount.query.filter_by(user_id=current_user.id).order_by(InventoryCount.created_at.desc()).limit(5).all()
-        for count in recent_counts:
-            recent_activities.append({
-                'type': 'Inventory Count',
-                'description': f"Count: {count.count_name}",
-                'created_at': count.created_at,
-                'status': getattr(count, 'status', 'active')
-            })
-        
         # Get recent Serial Number Transfers
-        from models import SerialNumberTransfer
         recent_serial_transfers = SerialNumberTransfer.query.filter_by(user_id=current_user.id).order_by(SerialNumberTransfer.created_at.desc()).limit(5).all()
         for serial_transfer in recent_serial_transfers:
             recent_activities.append({
@@ -486,7 +500,6 @@ def dashboard():
             })
         
         # Get recent Serial Item Transfers
-        from models import SerialItemTransfer
         recent_serial_item_transfers = SerialItemTransfer.query.filter_by(user_id=current_user.id).order_by(SerialItemTransfer.created_at.desc()).limit(5).all()
         for serial_item_transfer in recent_serial_item_transfers:
             recent_activities.append({
@@ -497,12 +510,11 @@ def dashboard():
             })
         
         # Get recent Invoice Creation documents
-        from modules.invoice_creation.models import InvoiceDocument
         recent_invoices = InvoiceDocument.query.filter_by(user_id=current_user.id).order_by(InvoiceDocument.created_at.desc()).limit(5).all()
         for invoice in recent_invoices:
             recent_activities.append({
                 'type': 'Invoice Creation',
-                'description': f"Invoice: {invoice.invoice_number}",
+                'description': f"Invoice: {invoice.invoice_number or 'Draft'}",
                 'created_at': invoice.created_at,
                 'status': invoice.status
             })
@@ -514,29 +526,40 @@ def dashboard():
         logging.error(f"Database error in dashboard: {e}")
         # Handle database schema mismatch gracefully
         stats = {
-            'grpo_count': 0,
-            'transfer_count': 0,
-            'pick_list_count': 0,
-            'count_tasks': 0
+            'serial_transfer_count': 0,
+            'serial_item_transfer_count': 0,
+            'invoice_count': 0,
+            'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'serial_transfer_data': [0] * 12,
+            'serial_item_transfer_data': [0] * 12,
+            'invoice_data': [0] * 12
         }
         recent_activities = []
         flash('Database needs to be updated. Please run: python migrate_database.py', 'warning')
-    from models import SerialNumberTransfer, SerialItemTransfer
-    pending_serial_transfers = SerialNumberTransfer.query.filter_by(status='submitted').order_by(
-        SerialNumberTransfer.created_at.desc()).all()
+    
+    try:
+        # Get pending items for QC approval from the three modules
+        pending_serial_transfers = SerialNumberTransfer.query.filter_by(status='submitted').order_by(
+            SerialNumberTransfer.created_at.desc()).all()
 
-    # Get pending Serial Item Transfers for QC approval
-    pending_serial_item_transfers = SerialItemTransfer.query.filter_by(status='submitted').order_by(
-        SerialItemTransfer.created_at.desc()).all()
+        # Get pending Serial Item Transfers for QC approval
+        pending_serial_item_transfers = SerialItemTransfer.query.filter_by(status='submitted').order_by(
+            SerialItemTransfer.created_at.desc()).all()
 
-    # Get QC approved Serial Item Transfers ready for SAP posting
-    qc_approved_serial_item_transfers = SerialItemTransfer.query.filter_by(status='qc_approved').order_by(
-        SerialItemTransfer.qc_approved_at.desc()).all()
+        # Get QC approved Serial Item Transfers ready for SAP posting
+        qc_approved_serial_item_transfers = SerialItemTransfer.query.filter_by(status='qc_approved').order_by(
+            SerialItemTransfer.qc_approved_at.desc()).all()
 
-    # Get pending Invoice Creation documents for QC approval
-    from modules.invoice_creation.models import InvoiceDocument
-    pending_invoices = InvoiceDocument.query.filter_by(status='pending_qc').order_by(
-        InvoiceDocument.created_at.desc()).all()
+        # Get pending Invoice Creation documents for QC approval
+        pending_invoices = InvoiceDocument.query.filter_by(status='pending_qc').order_by(
+            InvoiceDocument.created_at.desc()).all()
+    except Exception as e:
+        logging.error(f"Error fetching pending items: {e}")
+        pending_serial_transfers = []
+        pending_serial_item_transfers = []
+        qc_approved_serial_item_transfers = []
+        pending_invoices = []
 
     # Calculate Process Analytics Data
     analytics = {}
@@ -663,7 +686,7 @@ def dashboard():
             'invoice_creation': {'total': 0, 'posted': 0, 'draft': 0, 'completion_rate': 0, 'avg_processing_time': 'N/A'}
         }
 
-    return render_template('dashboard.html',
+    return render_template('dashboard_new.html',
                            pending_serial_transfers=pending_serial_transfers,
                            pending_serial_item_transfers=pending_serial_item_transfers,
                            pending_invoices=pending_invoices,
