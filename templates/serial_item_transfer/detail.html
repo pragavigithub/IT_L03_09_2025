@@ -200,7 +200,7 @@
                         <div class="alert alert-info alert-sm">
                             <small>
                                 <i class="fas fa-info-circle"></i>
-                                Enter serial number and press <kbd>Tab</kbd> or <kbd>Enter</kbd> to validate and add
+                                Enter serial number to validate and add
                                 immediately to the list
                             </small>
                         </div>
@@ -208,13 +208,13 @@
 
                     <!-- Bulk Mode -->
                     <div id="bulkMode" style="display: none;">
-                        <div class="alert alert-success alert-sm">
-                            <small>
-                                <i class="fas fa-layer-group"></i>
-                                <strong>Bulk Mode:</strong> Paste multiple serial numbers (one per line) and validate
-                                all at once. Great for 1000+ serials!
-                            </small>
-                        </div>
+                        <!--                        <div class="alert alert-success alert-sm">-->
+                        <!--                            <small>-->
+                        <!--                                <i class="fas fa-layer-group"></i>-->
+                        <!--                                <strong>Bulk Mode:</strong> Paste multiple serial numbers (one per line) and validate-->
+                        <!--                                all at once. Great for 1000+ serials!-->
+                        <!--                            </small>-->
+                        <!--                        </div>-->
 
                         <!--                        <div class="row">-->
                         <!--                            <div class="col-md-8">-->
@@ -500,7 +500,7 @@
 
         // Focus on first input
         $('.serial-input[data-line="1"]').focus();
-        
+
         // Set default mode
         toggleBulkMode(false);
     });
