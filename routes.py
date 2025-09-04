@@ -250,64 +250,145 @@ def get_item_name():
     """Get item name based on item code from SAP B1"""
     try:
         item_code = request.args.get('item_code')
+        warehouse_code = request.args.get('warehouse_code', '').strip()
+
         if not item_code:
             return jsonify({'success': False, 'error': 'Item code required'}), 400
 
         sap = SAPIntegration()
 
-        # Try to get item name from SAP B1
         if sap.ensure_logged_in():
             try:
-                # Use the SAP endpoint provided by user: https://192.168.0.127:50000/b1s/v1/Items?$select=ItemCode,ItemName
-                url = f"{sap.base_url}/b1s/v1/Items"
-                params = {
-                    '$filter': f"ItemCode eq '{item_code}'",
-                    '$select': 'ItemCode,ItemName'
+                # SAP SQL Query endpoint
+                url = f"{sap.base_url}/b1s/v1/SQLQueries('ItemCode_Validation')/List"
+
+                # Build JSON body instead of params
+                payload = {
+                    "ParamList": f"item_code='{item_code}'&whcode='{warehouse_code}'"
                 }
-                response = sap.session.get(url, params=params, timeout=10)
+
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Prefer': 'odata.maxpagesize=1'
+                }
+
+                response = sap.session.post(url, headers=headers, json=payload, timeout=10)
 
                 if response.status_code == 200:
                     data = response.json()
                     items = data.get('value', [])
 
-                    if items and len(items) > 0:
+                    if items:
                         item = items[0]
-                        item_name = item.get('ItemName') or f'Item {item_code}'
+                        item_name = item.get('itemName') or f'Item {item_code}'
 
-                        logging.info(f"Retrieved item name for {item_code}: {item_name}")
+                        logging.info(f"Retrieved item name for {item_code}: {item_name} in warehouse {warehouse_code}")
                         return jsonify({
                             'success': True,
                             'item_code': item_code,
-                            'item_name': item_name
+                            'item_name': item_name,
+                            'warehouse_code': warehouse_code
                         })
                     else:
-                        # Item not found in SAP
                         return jsonify({
                             'success': False,
-                            'error': f'Item code {item_code} not found in SAP B1'
+                            'error': f'Item code {item_code} not found in SAP B1 for warehouse {warehouse_code}'
                         }), 404
+
+                return jsonify({
+                    'success': False,
+                    'error': f"Unexpected response {response.status_code}: {response.text}"
+                }), response.status_code
 
             except Exception as sap_error:
                 logging.error(f"Error getting item from SAP: {str(sap_error)}")
-                # Return fallback response
                 return jsonify({
                     'success': True,
                     'item_code': item_code,
                     'item_name': f'Item {item_code}',
+                    'warehouse_code': warehouse_code,
                     'fallback': True
                 })
 
-        # Return fallback if SAP not available
         return jsonify({
             'success': True,
             'item_code': item_code,
             'item_name': f'Item {item_code}',
+            'warehouse_code': warehouse_code,
             'fallback': True
         })
 
     except Exception as e:
         logging.error(f"Error in get_item_name API: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+#
+# @app.route('/api/get-item-name', methods=['GET'])
+# def get_item_name():
+#     """Get item name based on item code from SAP B1"""
+#     try:
+#         item_code = request.args.get('item_code')
+#         warehouse_code = request.args.get('warehouse_code', '').strip()
+#
+#         if not item_code:
+#             return jsonify({'success': False, 'error': 'Item code required'}), 400
+#
+#         sap = SAPIntegration()
+#
+#         # Try to get item name from SAP B1
+#         if sap.ensure_logged_in():
+#             try:
+#                 # Use the SAP endpoint provided by user: https://192.168.0.127:50000/b1s/v1/Items?$select=ItemCode,ItemName
+#                 url = f"{sap.base_url}/b1s/v1/SQLQueries('ItemCode_Validation')/List"
+#                 params = {
+#                     "ParamList": f"item_code='{item_code}'&whcode='{warehouse_code}'"
+#                 }
+#                 headers = {
+#                     'Prefer': 'odata.maxpagesize=1'
+#                 }
+#                 response = sap.session.get(url,headers=headers, params=params, timeout=10)
+#                 print("response - >"+response)
+#                 if response.status_code == 200:
+#                     data = response.json()
+#                     items = data.get('value', [])
+#
+#                     if items and len(items) > 0:
+#                         item = items[0]
+#                         item_name = item.get('itemName') or f'Item {item_code}'
+#
+#                         logging.info(f"Retrieved item name for {item_code}: {item_name}")
+#                         return jsonify({
+#                             'success': True,
+#                             'item_code': item_code,
+#                             'item_name': item_name
+#                         })
+#                     else:
+#                         # Item not found in SAP
+#                         return jsonify({
+#                             'success': False,
+#                             'error': f'Item code {item_code} not found in SAP B1'
+#                         }), 404
+#
+#             except Exception as sap_error:
+#                 logging.error(f"Error getting item from SAP: {str(sap_error)}")
+#                 # Return fallback response
+#                 return jsonify({
+#                     'success': True,
+#                     'fallback': True
+#                 })
+#
+#         # Return fallback if SAP not available
+#         return jsonify({
+#             'success': True,
+#             'item_code': item_code,
+#             'item_name': f'Item {item_code}',
+#             'fallback': True
+#         })
+#
+#     except Exception as e:
+#         logging.error(f"Error in get_item_name API: {str(e)}")
+#         return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @login_manager.user_loader
@@ -496,7 +577,7 @@ def dashboard():
             'serial_transfer_count': serial_transfer_count,
             'serial_item_transfer_count': serial_item_transfer_count,
             'invoice_count': invoice_count,
-            'qc_count':qc_count,
+            'qc_count': qc_count,
             'months': months,
             'serial_transfer_data': serial_transfer_data,
             'serial_item_transfer_data': serial_item_transfer_data,
@@ -590,7 +671,7 @@ def dashboard():
         serial_transfer_completed = SerialNumberTransfer.query.filter_by(status='qc_approved').count()
         serial_transfer_pending = SerialNumberTransfer.query.filter_by(status='submitted').count()
         serial_transfer_success_rate = (
-                    serial_transfer_completed * 100 // serial_transfer_total) if serial_transfer_total > 0 else 0
+                serial_transfer_completed * 100 // serial_transfer_total) if serial_transfer_total > 0 else 0
 
         # Calculate average processing time for Serial Number Transfers
         from sqlalchemy import text

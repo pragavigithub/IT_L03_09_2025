@@ -83,7 +83,7 @@ Serial Number Transfer {{ transfer.transfer_number }}
             </div>
         </div>
         <div class="col-md-6">
-<!--            {% if transfer.notes %}-->
+            {% if transfer.status %}
             <div class="card">
                 <div class="card-header">
                     <h6 class="mb-0">Transfer Information</h6>
@@ -137,7 +137,7 @@ Serial Number Transfer {{ transfer.transfer_number }}
                 <!--                    <p class="mb-0">{{ transfer.notes }}</p>-->
                 <!--                </div>-->
             </div>
-<!--            {% endif %}-->
+            {% endif %}
         </div>
     </div>
 
@@ -1086,6 +1086,7 @@ Serial Number Transfer {{ transfer.transfer_number }}
         const itemNameInput = document.getElementById('item_name');
         const statusElement = document.getElementById('item_name_status');
         const itemCode = itemCodeInput.value.trim();
+        const warehouseCode = '{{ transfer.from_warehouse }}';
 
         if (!itemCode) {
             itemNameInput.value = '';
@@ -1101,7 +1102,7 @@ Serial Number Transfer {{ transfer.transfer_number }}
         itemNameInput.classList.remove('is-valid', 'is-invalid');
 
         // Fetch item name from API
-        fetch(`/api/get-item-name?item_code=${encodeURIComponent(itemCode)}`)
+        fetch(`/api/get-item-name?item_code=${encodeURIComponent(itemCode)}&warehouse_code=${encodeURIComponent(warehouseCode)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
