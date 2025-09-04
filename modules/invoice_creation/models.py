@@ -4,7 +4,6 @@ Contains all models related to invoice creation and serial number management
 """
 from app import db
 from datetime import datetime
-from models import User
 
 class InvoiceDocument(db.Model):
     """Main Invoice document header"""
@@ -31,8 +30,7 @@ class InvoiceDocument(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = db.relationship('User', foreign_keys=[user_id], backref='invoice_documents')
+    # Relationships will be established when models module is loaded
     lines = db.relationship('InvoiceLine', backref='invoice_document', lazy=True, cascade='all, delete-orphan')
 
 class InvoiceLine(db.Model):
