@@ -1956,7 +1956,7 @@ def serial_transfer_qc_approve(transfer_id):
             logging.error(f" SAP B1 posting exception: {str(e)}")
         
         # Update transfer status to approved (regardless of SAP result for now)
-        transfer.status = 'qc_approved'
+        transfer.status = 'Posted'
         transfer.qc_approver_id = current_user.id
         transfer.qc_approved_at = datetime.utcnow()
         transfer.qc_notes = qc_notes
