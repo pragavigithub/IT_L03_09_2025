@@ -37,109 +37,133 @@ Serial Number Transfer {{ transfer.transfer_number }}
 
     <!-- Transfer Details -->
     <div class="row mb-4">
+        <!-- Transfer Details -->
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">Transfer Information</h6>
+                <div class="card-header py-3">
+                    <h6 class="mb-0">Transfer Details</h6>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless table-sm">
-                        <tr>
-                            <td><strong>Transfer Number:</strong></td>
-                            <td>{{ transfer.transfer_number }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>From Warehouse:</strong></td>
-                            <td>{{ transfer.from_warehouse }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>To Warehouse:</strong></td>
-                            <td>{{ transfer.to_warehouse }}</td>
-                        </tr>
-                        <!--                        <tr>-->
-                        <!--                            <td><strong>Status:</strong></td>-->
-                        <!--                            <td>-->
-                        <!--                                {% if transfer.status == 'draft' %}-->
-                        <!--                                <span class="badge bg-secondary">Draft</span>-->
-                        <!--                                {% elif transfer.status == 'submitted' %}-->
-                        <!--                                <span class="badge bg-warning text-dark">Submitted</span>-->
-                        <!--                                {% elif transfer.status == 'qc_approved' %}-->
-                        <!--                                <span class="badge bg-success">QC Approved</span>-->
-                        <!--                                {% elif transfer.status == 'posted' %}-->
-                        <!--                                <span class="badge bg-primary">Posted to SAP</span>-->
-                        <!--                                {% elif transfer.status == 'rejected' %}-->
-                        <!--                                <span class="badge bg-danger">Rejected</span>-->
-                        <!--                                {% endif %}-->
-                        <!--                            </td>-->
-                        <!--                        </tr>-->
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p><strong>Transfer Number:</strong><br>{{ transfer.transfer_number }}</p>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <p><strong>Status:</strong></p>
+                            {% if transfer.status == 'draft' %}
+                            <span class="badge bg-secondary">Draft</span>
+                            {% elif transfer.status == 'submitted' %}
+                            <span class="badge bg-warning">Submitted</span>
+                            {% elif transfer.status == 'qc_approved' %}
+                            <span class="badge bg-success">QC Approved</span>
+                            {% elif transfer.status == 'posted' %}
+                            <span class="badge bg-primary">Posted</span>
+                            {% elif transfer.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>From Warehouse:</strong></p>-->
+                        <!--                            <span class="badge bg-info">{{ transfer.from_warehouse }}</span>-->
+                        <!--                        </div>-->
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>To Warehouse:</strong></p>-->
+                        <!--                            <span class="badge bg-info">{{ transfer.to_warehouse }}</span>-->
+                        <!--                        </div>-->
+                        <div class="col-sm-6">
+                            <p><strong>Priority:</strong></p>
+
+                            {% if transfer.priority == 'urgent' %}
+                            <span class="badge bg-danger">Urgent</span>
+                            {% elif transfer.priority == 'high' %}
+                            <span class="badge bg-warning">High</span>
+                            {% elif transfer.priority == 'normal' %}
+                            <span class="badge bg-info">Normal</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                            {% endif %}
+
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Total Items:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.items|length }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Created By:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.user.username }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Created Date:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
                         <!--                        {% if transfer.sap_document_number %}-->
-                        <!--                        <tr>-->
-                        <!--                            <td><strong>SAP Document:</strong></td>-->
-                        <!--                            <td><code>{{ transfer.sap_document_number }}</code></td>-->
-                        <!--                        </tr>-->
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>SAP Document Number:</strong></p>-->
+                        <!--                            <span class="badge bg-success">{{ transfer.sap_document_number }}</span>-->
+                        <!--                        </div>-->
                         <!--                        {% endif %}-->
-                    </table>
+                        {% if transfer.notes %}
+                        <div class="col-sm-6">
+                            <p><strong>Notes:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.notes }}</span>
+                        </div>
+                        {% endif %}
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            {% if transfer.status %}
             <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">Transfer Information</h6>
+                <div class="card-header py-3">
+                    <h6 class="mb-0">SAP B1 Details</h6>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless table-sm">
-                        <!--                        <tr>-->
-                        <!--                            <td><strong>Transfer Number:</strong></td>-->
-                        <!--                            <td>{{ transfer.transfer_number }}</td>-->
-                        <!--                        </tr>-->
-                        <!--                        <tr>-->
-                        <!--                            <td><strong>From Warehouse:</strong></td>-->
-                        <!--                            <td>{{ transfer.from_warehouse }}</td>-->
-                        <!--                        </tr>-->
-                        <!--                        <tr>-->
-                        <!--                            <td><strong>To Warehouse:</strong></td>-->
-                        <!--                            <td>{{ transfer.to_warehouse }}</td>-->
-                        <!--                        </tr>-->
-                        <tr>
-                            <td><strong>Status:</strong></td>
-                            <td>
-                                {% if transfer.status == 'draft' %}
-                                <span class="badge bg-secondary">Draft</span>
-                                {% elif transfer.status == 'submitted' %}
-                                <span class="badge bg-warning text-dark">Submitted</span>
-                                {% elif transfer.status == 'qc_approved' %}
-                                <span class="badge bg-success">QC Approved</span>
-                                {% elif transfer.status == 'posted' %}
-                                <span class="badge bg-primary">Posted to SAP</span>
-                                {% elif transfer.status == 'rejected' %}
-                                <span class="badge bg-danger">Rejected</span>
-                                {% endif %}
-                            </td>
-                        </tr>
+                    <div class="row">
                         {% if transfer.sap_document_number %}
-                        <tr>
-                            <td><strong>SAP Document:</strong></td>
-                            <td><code>{{ transfer.sap_document_number }}</code></td>
-                        </tr>
+                        <div class="col-sm-6">
+                            <p><strong>SAP Document Number:</strong></p>
+                            <span class="badge bg-success">{{ transfer.sap_document_number }}</span>
+                        </div>
                         {% endif %}
-                        <tr>
-                            <td><strong>Notes:</strong></td>
-                            <td><code>{{ transfer.notes }}</code></td>
-                        </tr>
-                    </table>
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>Transfer Number:</strong><br>{{ transfer.transfer_number }}</p>-->
+                        <!--                        </div>-->
+
+                        <div class="col-sm-6">
+                            <p><strong>Status:</strong></p>
+                            {% if transfer.status == 'draft' %}
+                            <span class="badge bg-secondary">Draft</span>
+                            {% elif transfer.status == 'submitted' %}
+                            <span class="badge bg-warning">Submitted</span>
+                            {% elif transfer.status == 'qc_approved' %}
+                            <span class="badge bg-success">QC Approved</span>
+                            {% elif transfer.status == 'posted' %}
+                            <span class="badge bg-primary">Posted</span>
+                            {% elif transfer.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>From Warehouse:</strong></p>
+                            <span class="badge bg-info">{{ transfer.from_warehouse }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>To Warehouse:</strong></p>
+                            <span class="badge bg-info">{{ transfer.to_warehouse }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Total Items:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.items|length }}</span>
+                        </div>
+                        </table>
+                    </div>
                 </div>
-                <!--                <div class="card-header">-->
-                <!--                    <h6 class="mb-0">Notes</h6>-->
-                <!--                </div>-->
-                <!--                <div class="card-body">-->
-                <!--                    <p class="mb-0">{{ transfer.notes }}</p>-->
-                <!--                </div>-->
             </div>
-            {% endif %}
         </div>
     </div>
+
 
     <!-- Items -->
     <div class="row mb-4">

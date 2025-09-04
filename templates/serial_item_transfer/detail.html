@@ -5,7 +5,8 @@
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800"><i data-feather="list"></i>Serial Item Transfer {{ transfer.transfer_number }}</h1>
+        <h1 class="h3 mb-0 text-gray-800"><i data-feather="list"></i>Serial Item Transfer {{ transfer.transfer_number }}
+        </h1>
         <div>
             {% if transfer.status == 'draft' and (transfer.user_id == current_user.id or current_user.role in ['admin',
             'manager']) %}
@@ -75,14 +76,14 @@
                             <span class="badge bg-danger">Rejected</span>
                             {% endif %}
                         </div>
-                        <div class="col-sm-6">
-                            <p><strong>From Warehouse:</strong></p>
-                            <span class="badge bg-info">{{ transfer.from_warehouse }}</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <p><strong>To Warehouse:</strong></p>
-                            <span class="badge bg-info">{{ transfer.to_warehouse }}</span>
-                        </div>
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>From Warehouse:</strong></p>-->
+                        <!--                            <span class="badge bg-info">{{ transfer.from_warehouse }}</span>-->
+                        <!--                        </div>-->
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>To Warehouse:</strong></p>-->
+                        <!--                            <span class="badge bg-info">{{ transfer.to_warehouse }}</span>-->
+                        <!--                        </div>-->
                         <div class="col-sm-6">
                             <p><strong>Priority:</strong></p>
 
@@ -109,12 +110,12 @@
                             <p><strong>Created Date:</strong></p>
                             <span class="badge bg-primary">{{ transfer.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                         </div>
-                        {% if transfer.sap_document_number %}
-                        <div class="col-sm-6">
-                            <p><strong>SAP Document Number:</strong></p>
-                            <span class="badge bg-success">{{ transfer.sap_document_number }}</span>
-                        </div>
-                        {% endif %}
+                        <!--                        {% if transfer.sap_document_number %}-->
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>SAP Document Number:</strong></p>-->
+                        <!--                            <span class="badge bg-success">{{ transfer.sap_document_number }}</span>-->
+                        <!--                        </div>-->
+                        <!--                        {% endif %}-->
                         {% if transfer.notes %}
                         <div class="col-sm-6">
                             <p><strong>Notes:</strong></p>
@@ -125,7 +126,54 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header py-3">
+                    <h6 class="mb-0">SAP B1 Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if transfer.sap_document_number %}
+                        <div class="col-sm-6">
+                            <p><strong>SAP Document Number:</strong></p>
+                            <span class="badge bg-success">{{ transfer.sap_document_number }}</span>
+                        </div>
+                        {% endif %}
+                        <!--                        <div class="col-sm-6">-->
+                        <!--                            <p><strong>Transfer Number:</strong><br>{{ transfer.transfer_number }}</p>-->
+                        <!--                        </div>-->
 
+                        <div class="col-sm-6">
+                            <p><strong>Status:</strong></p>
+                            {% if transfer.status == 'draft' %}
+                            <span class="badge bg-secondary">Draft</span>
+                            {% elif transfer.status == 'submitted' %}
+                            <span class="badge bg-warning">Submitted</span>
+                            {% elif transfer.status == 'qc_approved' %}
+                            <span class="badge bg-success">QC Approved</span>
+                            {% elif transfer.status == 'posted' %}
+                            <span class="badge bg-primary">Posted</span>
+                            {% elif transfer.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>From Warehouse:</strong></p>
+                            <span class="badge bg-info">{{ transfer.from_warehouse }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>To Warehouse:</strong></p>
+                            <span class="badge bg-info">{{ transfer.to_warehouse }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Total Items:</strong></p>
+                            <span class="badge bg-primary">{{ transfer.items|length }}</span>
+                        </div>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-6">
             <!-- Add Serial Item Form -->
@@ -135,14 +183,14 @@
             <div class="card shadow">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Add Serial Items</h6>
-<!--                    <div class="btn-group btn-group-sm">-->
-<!--                        <button type="button" class="btn btn-outline-primary" onclick="toggleBulkMode(false)" id="lineByLineBtn">-->
-<!--                            <i class="fas fa-list"></i> Line by Line-->
-<!--                        </button>-->
-<!--                        <button type="button" class="btn btn-primary" onclick="toggleBulkMode(true)" id="bulkModeBtn">-->
-<!--                            <i class="fas fa-layer-group"></i> Bulk Mode-->
-<!--                        </button>-->
-<!--                    </div>-->
+                    <!--                    <div class="btn-group btn-group-sm">-->
+                    <!--                        <button type="button" class="btn btn-outline-primary" onclick="toggleBulkMode(false)" id="lineByLineBtn">-->
+                    <!--                            <i class="fas fa-list"></i> Line by Line-->
+                    <!--                        </button>-->
+                    <!--                        <button type="button" class="btn btn-primary" onclick="toggleBulkMode(true)" id="bulkModeBtn">-->
+                    <!--                            <i class="fas fa-layer-group"></i> Bulk Mode-->
+                    <!--                        </button>-->
+                    <!--                    </div>-->
                 </div>
                 <div class="card-body">
                     <!-- Line by Line Mode -->
@@ -150,48 +198,51 @@
                         <div class="alert alert-info alert-sm">
                             <small>
                                 <i class="fas fa-info-circle"></i>
-                                Enter serial number and press <kbd>Tab</kbd> or <kbd>Enter</kbd> to validate and add immediately to the list
+                                Enter serial number and press <kbd>Tab</kbd> or <kbd>Enter</kbd> to validate and add
+                                immediately to the list
                             </small>
                         </div>
                     </div>
-                    
+
                     <!-- Bulk Mode -->
                     <div id="bulkMode" style="display: none;">
                         <div class="alert alert-success alert-sm">
                             <small>
                                 <i class="fas fa-layer-group"></i>
-                                <strong>Bulk Mode:</strong> Paste multiple serial numbers (one per line) and validate all at once. Great for 1000+ serials!
+                                <strong>Bulk Mode:</strong> Paste multiple serial numbers (one per line) and validate
+                                all at once. Great for 1000+ serials!
                             </small>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-8">
                                 <label class="form-label">Serial Numbers (one per line)</label>
-                                <textarea class="form-control" id="bulkSerialNumbers" rows="8" 
-                                    placeholder="IP1&#10;IP2&#10;IP3&#10;...paste up to 2000+ serial numbers here"></textarea>
+                                <textarea class="form-control" id="bulkSerialNumbers" rows="8"
+                                          placeholder="IP1&#10;IP2&#10;IP3&#10;...paste up to 2000+ serial numbers here"></textarea>
                                 <small class="text-muted">Supports up to 2000+ serial numbers</small>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Item Code (Optional)</label>
-                                <input type="text" class="form-control" id="expectedItemCode" 
-                                    placeholder="e.g., IPhone" title="Filter validation to specific item code">
+                                <input type="text" class="form-control" id="expectedItemCode"
+                                       placeholder="e.g., IPhone" title="Filter validation to specific item code">
                                 <small class="text-muted">Leave empty to auto-detect</small>
-                                
+
                                 <div class="mt-3">
                                     <button type="button" class="btn btn-primary w-100" onclick="validateBulkSerials()">
                                         <i class="fas fa-check-circle"></i> Validate All Serials
                                     </button>
                                 </div>
-                                
+
                                 <div class="mt-2">
-                                    <button type="button" class="btn btn-success w-100" onclick="addValidatedSerialsToTransfer()" 
-                                        id="addValidatedBtn" style="display: none;">
+                                    <button type="button" class="btn btn-success w-100"
+                                            onclick="addValidatedSerialsToTransfer()"
+                                            id="addValidatedBtn" style="display: none;">
                                         <i class="fas fa-plus-circle"></i> Add Valid Serials to Transfer
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Validation Results -->
                         <div id="bulkValidationResults" style="display: none;" class="mt-4">
                             <h6>Validation Results</h6>
