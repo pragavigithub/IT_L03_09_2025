@@ -78,11 +78,10 @@ app.config['SAP_B1_USERNAME'] = os.environ.get('SAP_B1_USERNAME', 'manager')
 app.config['SAP_B1_PASSWORD'] = os.environ.get('SAP_B1_PASSWORD', '1422')
 app.config['SAP_B1_COMPANY_DB'] = os.environ.get('SAP_B1_COMPANY_DB', 'SBODemoUS')
 
-# Import models
-import models
-import models_extensions
-
 with app.app_context():
+    # Import models after app context is established
+    import models
+    import models_extensions
     # Create tables
     db.create_all()
     logging.info("✅ Database tables created")

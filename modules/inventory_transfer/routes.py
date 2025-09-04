@@ -5,7 +5,6 @@ All routes related to inventory transfers between warehouses/bins
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import db
-from models import InventoryTransfer, InventoryTransferItem, User, SerialNumberTransfer, SerialNumberTransferItem, SerialNumberTransferSerial
 from sqlalchemy import or_, func
 import logging
 import random
@@ -26,6 +25,7 @@ def generate_transfer_number():
         transfer_number = f'ST-{date_part}-{random_part}'
         
         # Check if it already exists
+        from models import SerialNumberTransfer
         existing = SerialNumberTransfer.query.filter_by(transfer_number=transfer_number).first()
         if not existing:
             return transfer_number
@@ -34,6 +34,7 @@ def generate_transfer_number():
 @login_required
 def index():
     """Inventory Transfer main page - list all transfers for current user"""
+    from models import InventoryTransfer, InventoryTransferItem, User
     if not current_user.has_permission('inventory_transfer'):
         flash('Access denied - Inventory Transfer permissions required', 'error')
         return redirect(url_for('dashboard'))
@@ -45,6 +46,7 @@ def index():
 @login_required
 def detail(transfer_id):
     """Inventory Transfer detail page"""
+    from models import InventoryTransfer, InventoryTransferItem, User
     transfer = InventoryTransfer.query.get_or_404(transfer_id)
     
     # Check permissions
@@ -138,6 +140,7 @@ def detail(transfer_id):
 @login_required
 def create():
     """Create new inventory transfer"""
+    from models import InventoryTransfer, InventoryTransferItem, User
     if not current_user.has_permission('inventory_transfer'):
         flash('Access denied - Inventory Transfer permissions required', 'error')
         return redirect(url_for('dashboard'))
